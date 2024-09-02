@@ -1,5 +1,6 @@
 package dev.momory.springjwt.config;
 
+import dev.momory.springjwt.jwt.JWTFilter;
 import dev.momory.springjwt.jwt.JWTUtil;
 import dev.momory.springjwt.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
@@ -47,6 +48,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/join", "/login").permitAll()
                 .anyRequest().authenticated());
+
+        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
         http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil)
                 , UsernamePasswordAuthenticationFilter.class);

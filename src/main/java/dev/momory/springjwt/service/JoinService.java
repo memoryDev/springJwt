@@ -1,6 +1,6 @@
 package dev.momory.springjwt.service;
 
-import dev.momory.springjwt.UserRepository;
+import dev.momory.springjwt.repository.UserRepository;
 import dev.momory.springjwt.dto.JoinDTO;
 import dev.momory.springjwt.entity.UserEntity;
 import lombok.RequiredArgsConstructor;

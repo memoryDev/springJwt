@@ -3,6 +3,7 @@ package dev.momory.springjwt.jwt;
 import dev.momory.springjwt.dto.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -69,11 +70,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentications) throws IOException, ServletException {
         log.info("login succeess");
 
-        // 인증된 사용자 정보를 CustomUserDetails에서 가져옵니다.
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentications.getPrincipal();
-
         // 사용자 이름 추출
-        String username = customUserDetails.getUsername();
+        String username = authentications.getName();
 
         // 사용자 권한 추출
         Collection<? extends GrantedAuthority> authorities = authentications.getAuthorities();
@@ -82,10 +80,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         // JWT 토큰 생성
-        String token = jwtUtil.createJwt(username, role, 60 * 60 * 10L);
+        String access = jwtUtil.createJwt("access", username, role, 600000L);
+        String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
 
-        // 응답 헤더에 JWT 토큰 추가
-        response.addHeader("Authorization", "Bearer " + token);
+        // 응답 설정
+        response.setHeader("access", access);
+        response.addCookie(createCookie("refresh", refresh));
+        response.setStatus(HttpServletResponse.SC_OK);
+
+
     }
 
     /**
@@ -102,5 +105,21 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // 응답코드 401 설정
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+
+    /**
+     * 쿠키 생성
+     * @param key 쿠키 이름
+     * @param val 쿠키 값
+     * @return 생성된 쿠키
+     */
+    private Cookie createCookie(String key, String val) {
+        Cookie cookie = new Cookie(key, val);
+        cookie.setMaxAge(24*60*60);
+//        cookie.setSecure(true);
+//        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
     }
 }

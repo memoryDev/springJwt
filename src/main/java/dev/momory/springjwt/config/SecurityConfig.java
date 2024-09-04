@@ -103,6 +103,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 // "/", "/join", "/login" 인증 없이 접근 허용
                 .requestMatchers("/", "/join", "/login").permitAll()
+                .requestMatchers("/reissue").permitAll()
                 // 나머지 모든 요청에 대해서는 인증을 요구합니다.
                 .anyRequest().authenticated());
 

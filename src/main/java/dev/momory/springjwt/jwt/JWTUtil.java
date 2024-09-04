@@ -66,14 +66,30 @@ public class JWTUtil {
     }
 
     /**
+     * JWT 토큰에서 토큰 타입 추출
+     * @param token 사용자 인증에 사용되는 JWT토큰
+     * @return 토큰에서 추출한 토큰 타입
+     */
+    public String getCategory(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("category", String.class);
+    }
+
+    /**
      * 새로운 JWT 토큰을 생성
+     * @param access 토큰 타입(access/refresh)
      * @param username 사용자이름
      * @param role 사용자 권한
      * @param expiredMs 토큰의 만료 시간
      * @return 생성된 JWT 토큰 문자열
      */
-    public String createJwt(String username, String role, Long expiredMs) {
+    public String createJwt(String access, String username, String role, Long expiredMs) {
         return Jwts.builder() //JWT 생성 빌더
+                .claim("category", access) // 클레임추가
                 .claim("username", username) // 클레임추가
                 .claim("role", role) // 클레임추가
                 .issuedAt(new Date(System.currentTimeMillis())) // 현재 시간을 발행 시간으로 설정
